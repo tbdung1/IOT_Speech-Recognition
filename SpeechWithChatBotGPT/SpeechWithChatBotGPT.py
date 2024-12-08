@@ -93,15 +93,29 @@ def create_dataset():
             break  # Dừng vòng lặp nếu nhập 'n'
 
     # Chuyển thành dataframe và lưu thành CSV
-    if data:  # Kiểm tra nếu có dữ liệu để lưu
-        num_features = len(data[0])  # Số lượng đặc trưng trong mỗi dòng dữ liệu
-        column_names = [f"mfcc_{i + 1}" for i in range(num_features - 1)] + ["label"]
-        df = pd.DataFrame(data)
-        df.columns = column_names  # Cập nhật tên cột phù hợp
-        df.to_csv('dataset.csv', index=False)
-        print("Dataset saved as 'dataset.csv'")
+    if data:
+        save_dataset(data)
     else:
         print("No data to save.")
+
+
+def save_dataset(data, file_path='dataset.csv'):
+    # Nếu tệp tồn tại, đọc dữ liệu hiện tại
+    if os.path.exists(file_path):
+        existing_data = pd.read_csv(file_path)
+        num_features = len(data[0])  # Số lượng đặc trưng trong mỗi dòng
+        column_names = [f"mfcc_{i + 1}" for i in range(num_features - 1)] + ["label"]
+        new_data = pd.DataFrame(data, columns=column_names)
+        combined_data = pd.concat([existing_data, new_data], ignore_index=True)
+    else:
+        # Nếu tệp chưa tồn tại, tạo dữ liệu mới
+        num_features = len(data[0])  # Số lượng đặc trưng trong mỗi dòng
+        column_names = [f"mfcc_{i + 1}" for i in range(num_features - 1)] + ["label"]
+        combined_data = pd.DataFrame(data, columns=column_names)
+
+    # Ghi dữ liệu hợp nhất vào tệp
+    combined_data.to_csv(file_path, index=False)
+    print(f"Dataset updated and saved as '{file_path}'")
 
 
 if __name__ == "__main__":
