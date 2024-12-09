@@ -8,6 +8,20 @@ from sklearn.preprocessing import LabelEncoder
 import keyboard  # Ensure you have installed the keyboard library
 import serial
 import time
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from dotenv import load_dotenv
+
+def download_model_from_azure(container_name, blob_name, local_file_name, connection_string):
+    # Kết nối với Azure Blob Storage
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container_name)
+
+    # Tải mô hình từ Blob Storage
+    blob_client = container_client.get_blob_client(blob_name)
+    with open(local_file_name, "wb") as file:
+        data = blob_client.download_blob()
+        data.readinto(file)
+    print(f"Model downloaded to {local_file_name}")
 
 def record_audio(duration=5):
     # Audio parameters
@@ -79,18 +93,31 @@ def recognize_voice(model, label_encoder):
     # Print the result
     if label in labels_result:
         print("Yes, your voice is recognized in the dataset.")
-        send_alert_signal()
+        # send_alert_signal()
     else:
         print("No, your voice is not recognized in the dataset.")
 
 # Kết nối với Arduino qua cổng COM
-arduino = serial.Serial(port='COM7', baudrate=9600, timeout=.1)
+# arduino = serial.Serial(port='COM7', baudrate=9600, timeout=.1)
 
-def send_alert_signal():
-    arduino.write(b'1')  # Gửi tín hiệu "ALERT" đến Arduino
-    time.sleep(1)            # Đợi một chút để Arduino xử lý
+# def send_alert_signal():
+#     arduino.write(b'1')  # Gửi tín hiệu "ALERT" đến Arduino
+#     time.sleep(1)            # Đợi một chút để Arduino xử lý
 
 if __name__ == "__main__":
+    # Thông tin kết nối Azure
+    # Tải các biến môi trường từ tệp .env
+    load_dotenv()
+    # Truy xuất giá trị của biến môi trường
+    connection_string = os.getenv('AZURE_CONNECTION_STRING')
+    container_name = "svmmodel"
+    model_blob_name = "svm_model.pkl"
+    classes_blob_name = "classes.npy"
+
+    # Tải mô hình và encoder từ Azure Blob Storage
+    download_model_from_azure(container_name, model_blob_name, "svm_model.pkl", connection_string)
+    download_model_from_azure(container_name, classes_blob_name, "classes.npy", connection_string)
+
     # Load the trained SVM model and label encoder
     model = joblib.load('svm_model.pkl')
     label_encoder = LabelEncoder()
