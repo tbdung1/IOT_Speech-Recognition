@@ -11,7 +11,7 @@ def extract_features(file_path):
     mfccs_mean = np.mean(mfccs, axis=1)
     return mfccs_mean
 
-def save_dataset(data, file_path='dataset.csv'):
+def save_dataset(data, file_path):
     # Nếu tệp tồn tại, đọc dữ liệu hiện tại
     if os.path.exists(file_path):
         existing_data = pd.read_csv(file_path)
@@ -28,8 +28,8 @@ def save_dataset(data, file_path='dataset.csv'):
     combined_data.to_csv(file_path, index=False)
     print(f"Dataset updated and saved as '{file_path}'")
 
-def create_dataset_from_existing_files(directory="audio_test_dataset"):
-    data = []
+def create_recognized_dataset_from_existing_files(directory="audio_test_dataset"):
+    recognized_data = []
     label_encoder = LabelEncoder()
 
     # Lấy tất cả các tệp trong thư mục
@@ -41,13 +41,41 @@ def create_dataset_from_existing_files(directory="audio_test_dataset"):
         file_path = f"{directory}/{file}"
         features = extract_features(file_path)  # Trích xuất MFCC
         encoded_label = label_encoder.transform([file.split('_')[0]])[0]  # Mã hóa nhãn
-        data.append(features.tolist() + [encoded_label])  # Thêm đặc trưng và nhãn
+        recognized_data.append(features.tolist() + [encoded_label])  # Thêm đặc trưng và nhãn
 
     # Chuyển dữ liệu thành DataFrame và lưu thành CSV
-    if data:
-        save_dataset(data)
+    if recognized_data:
+        save_dataset(recognized_data, 'recognized_voice_dataset.csv')
     else:
-        print("No data found in directory!")
+        print("No recognized voice data found in directory!")
+
+def create_non_recognized_dataset_from_existing_files(directory="audio_test_dataset"):
+    non_recognized_data = []
+    non_recognized_label = "non_recognized"  # Gắn nhãn cho giọng nói không nhận dạng được
+    label_encoder = LabelEncoder()
+    label_encoder.fit([non_recognized_label])  # Mã hóa label cho giọng nói không nhận dạng
+
+    # Lấy tất cả các tệp trong thư mục
+    files = [f for f in os.listdir(directory) if f.endswith('.wav')]
+
+    for file in files:
+        file_path = f"{directory}/{file}"
+        features = extract_features(file_path)  # Trích xuất MFCC
+        encoded_label = label_encoder.transform([non_recognized_label])[0]  # Mã hóa nhãn
+        non_recognized_data.append(features.tolist() + [encoded_label])  # Thêm đặc trưng và nhãn
+
+    # Chuyển dữ liệu thành DataFrame và lưu thành CSV
+    if non_recognized_data:
+        save_dataset(non_recognized_data, 'non_recognized_voice_dataset.csv')
+    else:
+        print("No non-recognized voice data found in directory!")
+
+def create_dataset_from_existing_files(directory="audio_dataset", directory_non="audio_test_dataset"):
+    # Tạo dataset cho giọng nói đã đăng ký
+    create_recognized_dataset_from_existing_files(directory)
+
+    # Tạo dataset cho giọng nói không đăng ký
+    # create_non_recognized_dataset_from_existing_files(directory_non)
 
 if __name__ == "__main__":
     create_dataset_from_existing_files()
