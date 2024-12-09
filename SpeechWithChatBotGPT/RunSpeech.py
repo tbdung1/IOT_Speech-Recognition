@@ -6,6 +6,8 @@ import numpy as np
 import joblib
 from sklearn.preprocessing import LabelEncoder
 import keyboard  # Ensure you have installed the keyboard library
+import serial
+import time
 
 def record_audio(duration=5):
     # Audio parameters
@@ -67,15 +69,26 @@ def recognize_voice(model, label_encoder):
     # Predict using the SVM model
     prediction = model.predict(features)
     label = label_encoder.inverse_transform(prediction)[0]
+    print("Predicted label:", label)
 
     # Remove the temporary recording file
     os.remove(file_path)
 
+    labels_result = [0, 1]
+
     # Print the result
-    if label == "existential":
+    if label in labels_result:
         print("Yes, your voice is recognized in the dataset.")
+        send_alert_signal()
     else:
         print("No, your voice is not recognized in the dataset.")
+
+# Kết nối với Arduino qua cổng COM
+arduino = serial.Serial(port='COM7', baudrate=9600, timeout=.1)
+
+def send_alert_signal():
+    arduino.write(b'1')  # Gửi tín hiệu "ALERT" đến Arduino
+    time.sleep(1)            # Đợi một chút để Arduino xử lý
 
 if __name__ == "__main__":
     # Load the trained SVM model and label encoder

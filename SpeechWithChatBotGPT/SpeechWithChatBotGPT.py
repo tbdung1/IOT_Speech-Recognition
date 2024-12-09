@@ -84,6 +84,18 @@ def create_recognized_dataset(label):
         if more_data.lower() != 'y':
             break  # Stop the loop if 'n' is entered
 
+    # decoded_data = []
+    #
+    # for data in recognized_data:
+    #     features = data[:-1]  # Tách các đặc trưng (features)
+    #     encoded_label = data[-1]  # Label đã mã hóa
+    #     decoded_label = label_encoder.inverse_transform([encoded_label])[0]  # Giải mã label
+    #     decoded_data.append(features + [decoded_label])  # Thêm label đã giải mã vào
+    #
+    # # Hiển thị kết quả trước và sau khi giải mã
+    # for i in range(min(5, len(decoded_data))):  # Hiển thị 5 dòng đầu tiên (hoặc ít hơn nếu dataset nhỏ hơn 5 dòng)
+    #     print(f"Trước khi giải mã: {recognized_data[i]}")
+    #     print(f"Sau khi giải mã: {decoded_data[i]}")
     # Save the collected data to the dataset
     if recognized_data:
         save_dataset(recognized_data, 'recognized_voice_dataset.csv')
@@ -141,4 +153,4 @@ if __name__ == "__main__":
     # Collect data for recognized and non-recognized voices
     label = input("Enter your name or ID: ")
     create_recognized_dataset(label)
-    create_non_recognized_dataset()
+    # create_non_recognized_dataset()
