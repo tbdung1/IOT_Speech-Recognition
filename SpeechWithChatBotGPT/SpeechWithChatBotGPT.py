@@ -40,7 +40,8 @@ def record_audio(label, duration=5):
     p.terminate()
 
     # Save the audio file with a name corresponding to the label
-    directory = "audio_dataset"
+    # directory = "audio_dataset"
+    directory = "audio_test_dataset"
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -102,34 +103,32 @@ def create_recognized_dataset(label):
     else:
         print("No recognized data to save.")
 
-def create_non_recognized_dataset():
+def create_non_recognized_dataset(label):
     """Collect and create dataset for non-recognized voice"""
-    non_recognized_data = []
-    non_recognized_label = "non_recognized"  # Label for non-recognized voice
+    recognized_data = []
     label_encoder = LabelEncoder()
-    label_encoder.fit([non_recognized_label])  # Encode the label for non-recognized voice
+    label_encoder.fit([label])  # Encode the unique label for the speaker
 
-    print("Start recording unrecognized voice (someone else's voice)...")
+    print("Start recording recognized voice (your voice)...")
     while True:
-        record_audio(non_recognized_label)  # Record and save the audio file
+        record_audio(label)  # Record and save the audio file
 
         # Extract features from the audio files
-        files = [f for f in os.listdir('audio_dataset') if f.endswith('.wav')]
+        files = [f for f in os.listdir('audio_test_dataset') if f.endswith('.wav')]
         for file in files:
-            file_path = f'audio_dataset/{file}'
+            file_path = f'audio_test_dataset/{file}'
             features = extract_features(file_path)
-            encoded_label = label_encoder.transform([non_recognized_label])[0]
-            non_recognized_data.append(features.tolist() + [encoded_label])
+            encoded_label = label_encoder.transform([label])[0]
+            recognized_data.append(features.tolist() + [encoded_label])
 
-        more_data = input("Do you want to record more audio for the unrecognized voice? (y/n): ")
+        more_data = input("Do you want to record more audio for the recognized voice? (y/n): ")
         if more_data.lower() != 'y':
             break  # Stop the loop if 'n' is entered
 
-    # Save the collected data to the dataset
-    if non_recognized_data:
-        save_dataset(non_recognized_data, 'non_recognized_voice_dataset.csv')
+    if recognized_data:
+        save_nonregconize_dataset(recognized_data, 'non_recognized_voice_dataset.csv')
     else:
-        print("No unrecognized data to save.")
+        print("No recognized data to save.")
 
 def save_dataset(data, file_path='dataset.csv'):
     # If the file exists, read the current data
@@ -149,8 +148,27 @@ def save_dataset(data, file_path='dataset.csv'):
     combined_data.to_csv(file_path, index=False)
     print(f"Dataset updated and saved as '{file_path}'")
 
+def save_nonregconize_dataset(data, file_path='dataset.csv'):
+    # If the file exists, read the current data
+    if os.path.exists(file_path):
+        existing_data = pd.read_csv(file_path)
+        num_features = len(data[0])  # Number of features in each row
+        column_names = [f"mfcc_{i + 1}" for i in range(num_features - 1)] + ["label"]
+        new_data = pd.DataFrame(data, columns=column_names)
+        combined_data = pd.concat([existing_data, new_data], ignore_index=True)
+    else:
+        # If the file does not exist, create new data
+        num_features = len(data[0])  # Number of features in each row
+        column_names = [f"mfcc_{i + 1}" for i in range(num_features - 1)] + ["label"]
+        combined_data = pd.DataFrame(data, columns=column_names)
+
+    # Save the combined data to the file
+    combined_data.to_csv(file_path, index=False)
+    print(f"Dataset updated and saved as '{file_path}'")
+
+
 if __name__ == "__main__":
     # Collect data for recognized and non-recognized voices
     label = input("Enter your name or ID: ")
-    create_recognized_dataset(label)
-    # create_non_recognized_dataset()
+    # create_recognized_dataset(label)
+    create_non_recognized_dataset(label)
