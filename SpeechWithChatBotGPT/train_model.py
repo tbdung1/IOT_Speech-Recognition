@@ -1,10 +1,11 @@
 import pandas as pd
 from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score
 import joblib
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def load_data_from_csv(file_paths):
@@ -37,27 +38,39 @@ def load_data_from_csv(file_paths):
 
     # Save the label encoder classes for later use
     np.save('classes.npy', label_encoder.classes_)
-    return X_combined, y_combined
+    return X_combined.values, y_combined  # Trả về numpy arrays
 
 
 def train_svm(X, y):
-    # Chia dữ liệu thành tập huấn luyện và kiểm tra
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    print("Training set shape:", X_train.shape, y_train.shape)
-    print("Testing set shape:", X_test.shape, y_test.shape)
+    accuracies = []
+    kf = KFold(n_splits=10, shuffle=True, random_state=42)  # Chia dữ liệu thành 10 phần
 
-    # Khởi tạo và huấn luyện mô hình SVM
-    model = SVC(kernel='linear')
-    model.fit(X_train, y_train)
+    for fold, (train_index, test_index) in enumerate(kf.split(X), 1):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
 
-    # Dự đoán và kiểm tra độ chính xác
-    y_pred = model.predict(X_test)
-    print("Predictions:", y_pred)
-    print("Actual labels:", y_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Model accuracy: {accuracy * 100:.2f}%")
+        # Khởi tạo và huấn luyện mô hình SVM
+        model = SVC(kernel='linear')
+        model.fit(X_train, y_train)
+
+        # Dự đoán và kiểm tra độ chính xác
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        accuracies.append(accuracy)
+        print(f"Fold {fold} - Accuracy: {accuracy * 100:.2f}%")
+
+    # Vẽ biểu đồ độ chính xác qua từng epoch
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, len(accuracies) + 1), [acc * 100 for acc in accuracies], marker='o', linestyle='--', color='b')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy (%)')
+    plt.title('SVM Model Accuracy Over Epochs')
+    plt.ylim(0, 100)
+    plt.grid(True)
+    plt.show()
 
     # Lưu mô hình vào tệp
+    model.fit(X, y)  # Huấn luyện lại mô hình với toàn bộ dữ liệu
     joblib.dump(model, 'svm_model.pkl')
     print("Model saved as 'svm_model.pkl'")
 

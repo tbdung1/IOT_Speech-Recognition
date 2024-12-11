@@ -11,8 +11,8 @@ container_name = "svmmodel"
 # Các file cần upload
 model_blob_name = "svm_model.pkl"
 classes_blob_name = "classes.npy"
-model_local_path = r"C:\Users\84946\OneDrive\Desktop\Documents PTIT\HK1_nam4\IOT\VietGPT-VoiceBot-A-Vietnamese-Speech-Recognition-Chatbot-main\SpeechWithChatBotGPT\svm_model.pkl"
-classes_local_path = r"C:\Users\84946\OneDrive\Desktop\Documents PTIT\HK1_nam4\IOT\VietGPT-VoiceBot-A-Vietnamese-Speech-Recognition-Chatbot-main\SpeechWithChatBotGPT\classes.npy"
+model_local_path = r"C:\Users\84946\OneDrive\Desktop\Documents PTIT\HK1_nam4\IOT\Speech-Recognition\IOT_Speech-Recognition\SpeechWithChatBotGPT\svm_model.pkl"
+classes_local_path = r"C:\Users\84946\OneDrive\Desktop\Documents PTIT\HK1_nam4\IOT\Speech-Recognition\IOT_Speech-Recognition\SpeechWithChatBotGPT\classes.npy"
 
 # Tải mô hình lên
 blob_service_client = BlobServiceClient.from_connection_string(connection_string)

@@ -69,20 +69,18 @@ def create_recognized_dataset(label):
     label_encoder.fit([label])  # Encode the unique label for the speaker
 
     print("Start recording recognized voice (your voice)...")
-    while True:
-        record_audio(label)  # Record and save the audio file
+    record_audio(label)  # Record and save the audio file
 
-        # Extract features from the audio files
-        files = [f for f in os.listdir('audio_dataset') if f.endswith('.wav')]
-        for file in files:
-            file_path = f'audio_dataset/{file}'
-            features = extract_features(file_path)
-            encoded_label = label_encoder.transform([label])[0]
-            recognized_data.append(features.tolist() + [encoded_label])
+    # Extract features from the audio files
+    files = [f for f in os.listdir('audio_dataset') if f.endswith('.wav')]
+    for file in files:
+        file_path = f'audio_dataset/{file}'
+        features = extract_features(file_path)
+        encoded_label = label_encoder.transform([label])[0]
+        recognized_data.append(features.tolist() + [encoded_label])
 
-        more_data = input("Do you want to record more audio for the recognized voice? (y/n): ")
-        if more_data.lower() != 'y':
-            break  # Stop the loop if 'n' is entered
+
+
 
     # decoded_data = []
     #
